@@ -1,0 +1,45 @@
+{
+  "name": "Pulse Music",
+  "short_name": "Pulse",
+  "description": "Real-time music charts, new releases, genre intelligence & industry news — built for Africa and beyond.",
+  "start_url": "./Pulse.html",
+  "display": "standalone",
+  "background_color": "#08080d",
+  "theme_color": "#c8ff00",
+  "orientation": "any",
+  "scope": "./",
+  "lang": "en",
+  "categories": ["music", "entertainment", "news"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Billboard Hot 100",
+      "short_name": "Hot 100",
+      "description": "View the Billboard Hot 100",
+      "url": "./Pulse.html#billboard",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Genre Hub",
+      "short_name": "Genres",
+      "description": "Browse music by genre",
+      "url": "./Pulse.html#genres",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

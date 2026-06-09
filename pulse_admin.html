@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PULSE ADMIN — Control Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060608;--s1:#0d0d12;--s2:#121218;--s3:#181820;
+  --line:rgba(255,255,255,.06);--line2:rgba(255,255,255,.12);
+  --lime:#c8ff00;--cyan:#00e5ff;--rose:#ff2d6b;--amber:#ffb800;--violet:#9d4fff;--green:#00d084;
+  --txt:#e6e6ee;--dim:#6a6a80;--dim2:#3a3a50;--r:4px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--dim2)}
+
+/* ── LOGIN SCREEN ── */
+.login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:900;flex-direction:column;gap:2rem}
+.login-screen.hidden{display:none}
+.login-box{background:var(--s1);border:1px solid var(--line2);border-radius:8px;padding:2.5rem;width:100%;max-width:400px}
+.login-logo{font-family:'Anton',sans-serif;font-size:2rem;color:var(--lime);letter-spacing:.08em;margin-bottom:4px}
+.login-sub{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--rose);letter-spacing:.2em;margin-bottom:2rem}
+.lfield{margin-bottom:1rem}
+.lfield label{display:block;font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--dim);margin-bottom:.4rem}
+.lfield input{width:100%;background:var(--s3);border:1px solid var(--line2);color:var(--txt);padding:10px 14px;border-radius:var(--r);font-family:'Outfit',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s}
+.lfield input:focus{border-color:var(--rose)}
+.btn-login{width:100%;background:var(--rose);color:#fff;border:none;padding:12px;font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:.1em;border-radius:var(--r);cursor:pointer;margin-top:.4rem;transition:opacity .2s}
+.btn-login:hover{opacity:.85}
+.login-hint{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--amber);background:rgba(255,184,0,.08);border:1px solid rgba(255,184,0,.18);padding:8px 12px;border-radius:var(--r);margin-top:1rem;text-align:center}
+.lerr{color:var(--rose);font-size:.75rem;text-align:center;margin-top:.5rem;min-height:1rem}
+
+/* ── MAIN LAYOUT ── */
+.admin-wrap{display:flex;min-height:100vh;flex:1}
+.sidebar{width:220px;background:var(--s1);border-right:1px solid var(--line);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-logo{padding:1.2rem 1.2rem .8rem;border-bottom:1px solid var(--line)}
+.sb-title{font-family:'Anton',sans-serif;font-size:1.3rem;color:var(--rose);letter-spacing:.06em}
+.sb-sub{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--dim);letter-spacing:.14em;margin-top:2px}
+.sb-nav{flex:1;padding:.8rem 0}
+.sb-section{font-family:'JetBrains Mono',monospace;font-size:.5rem;letter-spacing:.16em;color:var(--dim2);padding:.6rem 1.2rem .3rem;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:8px;padding:.6rem 1.2rem;color:var(--dim);font-size:.82rem;cursor:pointer;transition:all .15s;border-left:2px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--txt);background:rgba(255,255,255,.03)}
+.nav-item.active{color:var(--lime);background:rgba(200,255,0,.05);border-left-color:var(--lime)}
+.nav-icon{font-size:1rem;width:18px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--rose);color:#fff;font-family:'JetBrains Mono',monospace;font-size:.5rem;padding:2px 6px;border-radius:10px}
+.sb-bottom{padding:1rem 1.2rem;border-top:1px solid var(--line)}
+.admin-user{display:flex;align-items:center;gap:8px}
+.admin-av{width:28px;height:28px;background:var(--rose);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:.85rem;color:#fff;flex-shrink:0}
+.admin-name{font-size:.78rem;font-weight:600}
+.admin-role{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--dim);letter-spacing:.06em}
+.logout-btn{margin-top:.5rem;width:100%;background:transparent;border:1px solid var(--line2);color:var(--dim);padding:7px;font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.1em;border-radius:var(--r);cursor:pointer;transition:all .2s}
+.logout-btn:hover{border-color:var(--rose);color:var(--rose)}
+
+/* ── CONTENT ── */
+.main{flex:1;overflow-y:auto;padding:1.5rem;min-width:0}
+.page{display:none}
+.page.active{display:block}
+.page-header{margin-bottom:1.5rem}
+.page-title{font-family:'Anton',sans-serif;font-size:1.6rem;letter-spacing:.06em;color:var(--txt)}
+.page-sub{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);letter-spacing:.12em;margin-top:4px}
+
+/* ── STATS GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+@media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.2rem;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.c-lime::after{background:var(--lime)}
+.stat-card.c-cyan::after{background:var(--cyan)}
+.stat-card.c-rose::after{background:var(--rose)}
+.stat-card.c-amber::after{background:var(--amber)}
+.stat-card.c-green::after{background:var(--green)}
+.stat-card.c-violet::after{background:var(--violet)}
+.stat-n{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:.04em;line-height:1;margin-bottom:4px}
+.stat-n.lime{color:var(--lime)}.stat-n.cyan{color:var(--cyan)}.stat-n.rose{color:var(--rose)}.stat-n.amber{color:var(--amber)}.stat-n.green{color:var(--green)}.stat-n.violet{color:var(--violet)}
+.stat-k{font-family:'JetBrains Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim)}
+.stat-delta{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--green);margin-top:4px}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:1.5rem}
+.table-head{padding:.9rem 1.2rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem}
+.table-title{font-family:'Anton',sans-serif;font-size:.95rem;letter-spacing:.1em;color:var(--txt)}
+.table-actions{display:flex;gap:6px;flex-wrap:wrap}
+.tbtn{background:var(--s2);border:1px solid var(--line2);color:var(--dim);padding:6px 12px;border-radius:var(--r);font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.08em;cursor:pointer;transition:all .18s}
+.tbtn:hover{border-color:var(--lime);color:var(--lime)}
+.tbtn.danger:hover{border-color:var(--rose);color:var(--rose)}
+.search-box{background:var(--s3);border:1px solid var(--line2);color:var(--txt);padding:7px 12px;border-radius:var(--r);font-family:'Outfit',sans-serif;font-size:.8rem;outline:none;width:200px;transition:border-color .18s}
+.search-box:focus{border-color:var(--cyan)}
+.search-box::placeholder{color:var(--dim2)}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.12em;color:var(--dim);padding:.7rem 1rem;text-align:left;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015);cursor:pointer;white-space:nowrap;user-select:none}
+.tbl th:hover{color:var(--txt)}
+.tbl td{padding:.7rem 1rem;font-size:.78rem;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.018)}
+.u-av{width:28px;height:28px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:.75rem;color:var(--txt);flex-shrink:0}
+.u-name{font-weight:600;font-size:.8rem}
+.u-email{font-size:.7rem;color:var(--dim)}
+.badge{display:inline-flex;align-items:center;font-family:'JetBrains Mono',monospace;font-size:.52rem;padding:2px 8px;border-radius:10px;letter-spacing:.06em}
+.badge.active{background:rgba(0,208,132,.12);color:var(--green);border:1px solid rgba(0,208,132,.25)}
+.badge.inactive{background:rgba(255,45,107,.1);color:var(--rose);border:1px solid rgba(255,45,107,.2)}
+.badge.pending{background:rgba(255,184,0,.1);color:var(--amber);border:1px solid rgba(255,184,0,.2)}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--dim)}
+.row-actions{display:flex;gap:4px}
+.row-btn{background:transparent;border:1px solid var(--line2);color:var(--dim);padding:3px 8px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:.5rem;cursor:pointer;transition:all .15s}
+.row-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.row-btn.del:hover{border-color:var(--rose);color:var(--rose)}
+.empty-state{padding:2.5rem;text-align:center;color:var(--dim)}
+.empty-state .ei{font-size:2rem;margin-bottom:.6rem}
+.empty-state p{font-size:.82rem}
+.pagination{display:flex;align-items:center;gap:6px;padding:.8rem 1.2rem;border-top:1px solid var(--line);justify-content:flex-end}
+.pg-btn{background:var(--s2);border:1px solid var(--line2);color:var(--dim);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);cursor:pointer;font-size:.75rem;transition:all .15s}
+.pg-btn:hover:not(:disabled){border-color:var(--lime);color:var(--lime)}
+.pg-btn:disabled{opacity:.3;cursor:default}
+.pg-info{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--dim)}
+
+/* ── USER DETAIL MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:800;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-bg.open{display:flex}
+.modal-box{background:var(--s2);border:1px solid var(--line2);border-radius:8px;padding:2rem;width:100%;max-width:500px;position:relative;max-height:85vh;overflow-y:auto}
+.modal-box h3{font-family:'Anton',sans-serif;font-size:1.3rem;color:var(--lime);letter-spacing:.06em;margin-bottom:1.2rem}
+.detail-row{display:flex;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.detail-row:last-child{border-bottom:none}
+.detail-label{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.12em;color:var(--dim);width:100px;flex-shrink:0;padding-top:2px}
+.detail-val{font-size:.8rem;color:var(--txt);flex:1;word-break:break-all}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--dim);font-size:1.2rem;cursor:pointer}
+.modal-close:hover{color:var(--txt)}
+.genre-pills{display:flex;flex-wrap:wrap;gap:4px}
+.genre-pill{font-family:'JetBrains Mono',monospace;font-size:.52rem;padding:2px 8px;border-radius:10px;background:rgba(200,255,0,.08);color:var(--lime);border:1px solid rgba(200,255,0,.2)}
+
+/* ── CHARTS ── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+@media(max-width:800px){.chart-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:1.2rem}
+.chart-title{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.14em;color:var(--dim);margin-bottom:1rem}
+.bar-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem}
+.bar-label{font-size:.72rem;width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;background:var(--s3);height:6px;border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;background:var(--lime);transition:width .5s ease}
+.bar-val{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);width:30px;text-align:right}
+.sparkline{display:flex;align-items:flex-end;gap:3px;height:40px}
+.spark-bar{flex:1;background:var(--lime);border-radius:2px 2px 0 0;opacity:.7;transition:opacity .2s}
+.spark-bar:hover{opacity:1}
+
+/* ── ACTIVITY ── */
+.activity-list{display:flex;flex-direction:column;gap:0}
+.act-item{display:flex;gap:.8rem;padding:.7rem 1.2rem;border-bottom:1px solid var(--line);align-items:flex-start}
+.act-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.act-dot.signup{background:var(--green)}
+.act-dot.login{background:var(--cyan)}
+.act-dot.del{background:var(--rose)}
+.act-content{flex:1;min-width:0}
+.act-msg{font-size:.78rem;line-height:1.4}
+.act-time{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--dim);margin-top:2px}
+
+/* ── SETTINGS ── */
+.settings-section{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:1.2rem;margin-bottom:1rem}
+.settings-title{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.14em;color:var(--cyan);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--line)}
+.setting-row:last-child{border-bottom:none}
+.setting-info h4{font-size:.82rem;font-weight:600;margin-bottom:2px}
+.setting-info p{font-size:.7rem;color:var(--dim)}
+.toggle{position:relative;width:38px;height:20px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--s3);border-radius:10px;transition:.3s}
+.slider::before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:var(--dim);border-radius:50%;transition:.3s}
+input:checked+.slider{background:var(--lime)}
+input:checked+.slider::before{transform:translateX(18px);background:#000}
+.inp-setting{background:var(--s3);border:1px solid var(--line2);color:var(--txt);padding:7px 12px;border-radius:var(--r);font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;width:220px;transition:border-color .18s}
+.inp-setting:focus{border-color:var(--cyan)}
+.btn-save{background:var(--lime);color:#000;border:none;padding:8px 20px;font-family:'Anton',sans-serif;font-size:.85rem;letter-spacing:.1em;border-radius:var(--r);cursor:pointer;transition:opacity .2s}
+.btn-save:hover{opacity:.85}
+.btn-danger{background:transparent;border:1px solid var(--rose);color:var(--rose);padding:8px 20px;font-family:'Anton',sans-serif;font-size:.85rem;letter-spacing:.1em;border-radius:var(--r);cursor:pointer;transition:all .2s}
+.btn-danger:hover{background:var(--rose);color:#fff}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--line2);border-left:3px solid var(--rose);padding:10px 15px;border-radius:var(--r);font-size:.78rem;z-index:900;opacity:0;transform:translateY(10px);transition:all .3s;max-width:300px;pointer-events:none}
+.toast.on{opacity:1;transform:translateY(0)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{width:200px}
+  .stat-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:580px){
+  .admin-wrap{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:relative}
+  .sb-nav{display:flex;flex-wrap:wrap;padding:.4rem}
+  .nav-item{padding:.4rem .8rem;border-left:none;border-bottom:2px solid transparent}
+  .nav-item.active{border-bottom-color:var(--lime);border-left:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ ADMIN LOGIN ═══ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">PULSE</div>
+    <div class="login-sub">⚙ ADMIN DASHBOARD</div>
+    <div class="lfield"><label>ADMIN EMAIL</label><input type="email" id="ad_email" placeholder="admin@pulse.music" onkeydown="if(event.key==='Enter')doAdminLogin()"></div>
+    <div class="lfield"><label>PASSWORD</label><input type="password" id="ad_pass" placeholder="Admin password" onkeydown="if(event.key==='Enter')doAdminLogin()"></div>
+    <button class="btn-login" onclick="doAdminLogin()">ACCESS DASHBOARD</button>
+    <div class="login-hint">Demo credentials: admin@pulse.music / admin2026</div>
+    <div class="lerr" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div class="admin-wrap" id="adminApp" style="display:none">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-title">PULSE</div>
+      <div class="sb-sub">⚙ ADMIN PANEL</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">MAIN</div>
+      <a class="nav-item active" onclick="showPage('dashboard')" href="#">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <a class="nav-item" onclick="showPage('users')" href="#">
+        <span class="nav-icon">👥</span> Users
+        <span class="nav-badge" id="userCountBadge">0</span>
+      </a>
+      <a class="nav-item" onclick="showPage('activity')" href="#">
+        <span class="nav-icon">📋</span> Activity Log
+      </a>
+      <div class="sb-section">DATA</div>
+      <a class="nav-item" onclick="showPage('analytics')" href="#">
+        <span class="nav-icon">📈</span> Analytics
+      </a>
+      <a class="nav-item" onclick="showPage('genres')" href="#">
+        <span class="nav-icon">🎵</span> Genre Stats
+      </a>
+      <a class="nav-item" onclick="showPage('countries')" href="#">
+        <span class="nav-icon">🌍</span> Countries
+      </a>
+      <div class="sb-section">SYSTEM</div>
+      <a class="nav-item" onclick="showPage('settings')" href="#">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+      <a class="nav-item" href="pulse_app.html" target="_blank">
+        <span class="nav-icon">↗</span> Open Pulse App
+      </a>
+    </nav>
+    <div class="sb-bottom">
+      <div class="admin-user">
+        <div class="admin-av" id="adminAv">A</div>
+        <div>
+          <div class="admin-name" id="adminName">Admin</div>
+          <div class="admin-role">SUPER ADMIN</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="adminLogout()">SIGN OUT</button>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">DASHBOARD</div>
+        <div class="page-sub">REAL-TIME PULSE PLATFORM OVERVIEW · APR 13, 2026</div>
+      </div>
+      <div class="stat-grid" id="dashStats"></div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">🔥 SIGNUPS — LAST 7 DAYS</div>
+          <div class="sparkline" id="sparkSignups"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">🌍 USERS BY COUNTRY</div>
+          <div id="countryBars"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">🎵 TOP GENRES SELECTED</div>
+          <div id="genreBars"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">📊 PLATFORM STATS</div>
+          <div id="platformStats"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head">
+          <div class="table-title">RECENT SIGNUPS</div>
+          <button class="tbtn" onclick="showPage('users')">VIEW ALL USERS →</button>
+        </div>
+        <div id="recentSignups"></div>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="page" id="page-users">
+      <div class="page-header">
+        <div class="page-title">USER MANAGEMENT</div>
+        <div class="page-sub">ALL REGISTERED PULSE ACCOUNTS</div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head">
+          <div class="table-title">ALL USERS <span id="totalUserCount" style="font-size:.75rem;color:var(--dim);font-family:'JetBrains Mono',monospace;margin-left:8px"></span></div>
+          <div class="table-actions">
+            <input class="search-box" id="userSearch" placeholder="Search name, email…" oninput="filterUsers()">
+            <button class="tbtn" onclick="exportCSV()">⬇ EXPORT CSV</button>
+            <button class="tbtn" onclick="refreshData()">↻ REFRESH</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th onclick="sortUsers('name')">USER ↕</th>
+                <th onclick="sortUsers('country')">COUNTRY ↕</th>
+                <th onclick="sortUsers('genres')">GENRES</th>
+                <th onclick="sortUsers('joinedAt')">JOINED ↕</th>
+                <th onclick="sortUsers('lastSeen')">LAST SEEN ↕</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="userPagination"></div>
+      </div>
+    </div>
+
+    <!-- ── ACTIVITY ── -->
+    <div class="page" id="page-activity">
+      <div class="page-header">
+        <div class="page-title">ACTIVITY LOG</div>
+        <div class="page-sub">ALL PLATFORM EVENTS & USER ACTIONS</div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head">
+          <div class="table-title">RECENT ACTIVITY</div>
+          <div class="table-actions">
+            <button class="tbtn danger" onclick="clearActivityLog()">🗑 CLEAR LOG</button>
+          </div>
+        </div>
+        <div class="activity-list" id="activityList"></div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS ── -->
+    <div class="page" id="page-analytics">
+      <div class="page-header">
+        <div class="page-title">ANALYTICS</div>
+        <div class="page-sub">PLATFORM GROWTH & ENGAGEMENT DATA</div>
+      </div>
+      <div class="stat-grid" id="analyticsStats"></div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">📅 DAILY SIGNUPS (LAST 14 DAYS)</div>
+          <div class="sparkline" id="sparkSignups2" style="height:60px"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">📱 DEVICE / ENGAGEMENT</div>
+          <div id="engagementStats"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GENRES ── -->
+    <div class="page" id="page-genres">
+      <div class="page-header">
+        <div class="page-title">GENRE STATISTICS</div>
+        <div class="page-sub">MOST POPULAR GENRES ACROSS ALL USERS</div>
+      </div>
+      <div class="chart-card" style="margin-bottom:1rem">
+        <div class="chart-title">🎵 ALL GENRES — POPULARITY RANKING</div>
+        <div id="allGenreBars"></div>
+      </div>
+    </div>
+
+    <!-- ── COUNTRIES ── -->
+    <div class="page" id="page-countries">
+      <div class="page-header">
+        <div class="page-title">COUNTRIES</div>
+        <div class="page-sub">USER DISTRIBUTION BY REGION</div>
+      </div>
+      <div class="chart-card" style="margin-bottom:1rem">
+        <div class="chart-title">🌍 ALL COUNTRIES — USER COUNT</div>
+        <div id="allCountryBars"></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div class="page-title">SETTINGS</div>
+        <div class="page-sub">ADMIN ACCOUNT & PLATFORM CONFIGURATION</div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">🔐 ADMIN CREDENTIALS</div>
+        <div class="setting-row">
+          <div class="setting-info"><h4>Admin Email</h4><p>Change the admin login email</p></div>
+          <input class="inp-setting" id="newAdminEmail" placeholder="admin@pulse.music">
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><h4>Admin Password</h4><p>Change the dashboard password</p></div>
+          <input class="inp-setting" type="password" id="newAdminPass" placeholder="New password">
+        </div>
+        <div style="margin-top:1rem;display:flex;gap:8px">
+          <button class="btn-save" onclick="saveAdminCreds()">SAVE CREDENTIALS</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">🔔 NOTIFICATIONS</div>
+        <div class="setting-row">
+          <div class="setting-info"><h4>New User Alerts</h4><p>Notify on each new registration</p></div>
+          <label class="toggle"><input type="checkbox" id="tog-newuser" checked><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><h4>Daily Report</h4><p>Send daily summary of platform stats</p></div>
+          <label class="toggle"><input type="checkbox" id="tog-daily"><span class="slider"></span></label>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">⚠️ DANGER ZONE</div>
+        <div class="setting-row">
+          <div class="setting-info"><h4>Clear All User Data</h4><p>Permanently delete all registered accounts</p></div>
+          <button class="btn-danger" onclick="clearAllUsers()">DELETE ALL USERS</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><h4>Reset Platform</h4><p>Clear all data including activity logs</p></div>
+          <button class="btn-danger" onclick="resetPlatform()">FULL RESET</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- USER DETAIL MODAL -->
+<div class="modal-bg" id="userModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeUserModal()">✕</button>
+    <h3 id="modalUserName">User Details</h3>
+    <div id="modalUserBody"></div>
+    <div style="display:flex;gap:8px;margin-top:1.2rem;flex-wrap:wrap" id="modalActions"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// STORAGE HELPERS
+// ══════════════════════════════════════════════════
+function getAccounts(){try{return JSON.parse(localStorage.getItem('pulse_accounts')||'[]')}catch(e){return[]}}
+function saveAccounts(arr){localStorage.setItem('pulse_accounts',JSON.stringify(arr))}
+function getAdminCreds(){
+  return {
+    email: localStorage.getItem('pulse_admin_email')||'admin@pulse.music',
+    pass: localStorage.getItem('pulse_admin_pass')||'admin2026'
+  };
+}
+function getActivityLog(){try{return JSON.parse(localStorage.getItem('pulse_activity')||'[]')}catch(e){return[]}}
+function saveActivityLog(arr){localStorage.setItem('pulse_activity',JSON.stringify(arr.slice(0,500)))}
+function logActivity(type, msg){
+  const log = getActivityLog();
+  log.unshift({type, msg, ts: new Date().toISOString()});
+  saveActivityLog(log);
+}
+
+// ══════════════════════════════════════════════════
+// ADMIN AUTH
+// ══════════════════════════════════════════════════
+let adminSession = sessionStorage.getItem('pulse_admin_session');
+
+function doAdminLogin(){
+  const email = document.getElementById('ad_email').value.trim();
+  const pass = document.getElementById('ad_pass').value;
+  const creds = getAdminCreds();
+  document.getElementById('loginErr').textContent = '';
+  if(!email||!pass){document.getElementById('loginErr').textContent='Fill in all fields';return}
+  if(email.toLowerCase()===creds.email.toLowerCase()&&pass===creds.pass){
+    adminSession = 'admin_' + Date.now();
+    sessionStorage.setItem('pulse_admin_session', adminSession);
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('adminApp').style.display = 'flex';
+    document.getElementById('adminAv').textContent = email[0].toUpperCase();
+    document.getElementById('adminName').textContent = email.split('@')[0];
+    logActivity('login', `Admin logged in from ${navigator.userAgent.slice(0,40)}`);
+    initDashboard();
+  } else {
+    document.getElementById('loginErr').textContent = 'Incorrect email or password';
+  }
+}
+
+function adminLogout(){
+  sessionStorage.removeItem('pulse_admin_session');
+  adminSession = null;
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('adminApp').style.display = 'none';
+}
+
+function saveAdminCreds(){
+  const em = document.getElementById('newAdminEmail').value.trim();
+  const pw = document.getElementById('newAdminPass').value;
+  if(em) localStorage.setItem('pulse_admin_email', em);
+  if(pw && pw.length>=6) localStorage.setItem('pulse_admin_pass', pw);
+  toast('✅ Admin credentials saved');
+}
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  // find matching nav
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+  });
+  // refresh data for that page
+  switch(id){
+    case 'dashboard': renderDashboard(); break;
+    case 'users': renderUsersTable(); break;
+    case 'activity': renderActivityLog(); break;
+    case 'analytics': renderAnalytics(); break;
+    case 'genres': renderGenreStats(); break;
+    case 'countries': renderCountryStats(); break;
+  }
+}
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtDate(iso){if(!iso)return '—';const d=new Date(iso);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
+function fmtShort(iso){if(!iso)return '—';const d=new Date(iso);const diff=(Date.now()-d)/1000;if(diff<60)return 'Just now';if(diff<3600)return Math.floor(diff/60)+'m ago';if(diff<86400)return Math.floor(diff/3600)+'h ago';return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3400)}
+function getColor(i){return['var(--lime)','var(--cyan)','var(--amber)','var(--rose)','var(--violet)','var(--green)'][i%6]}
+function refreshData(){renderDashboard();renderUsersTable();toast('↻ Data refreshed');}
+
+// ══════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════
+function initDashboard(){
+  updateUserBadge();
+  renderDashboard();
+}
+
+function updateUserBadge(){
+  const n = getAccounts().length;
+  document.getElementById('userCountBadge').textContent = n;
+}
+
+function renderDashboard(){
+  const users = getAccounts();
+  const now = Date.now();
+  const today = users.filter(u=>new Date(u.joinedAt)>new Date(now-86400000)).length;
+  const thisWeek = users.filter(u=>new Date(u.joinedAt)>new Date(now-7*86400000)).length;
+  const active = users.filter(u=>u.status==='active').length;
+  const countries = [...new Set(users.map(u=>u.country).filter(Boolean))].length;
+
+  // Stats
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card c-lime"><div class="stat-n lime">${users.length}</div><div class="stat-k">TOTAL USERS</div><div class="stat-delta">+${today} today</div></div>
+    <div class="stat-card c-green"><div class="stat-n green">${active}</div><div class="stat-k">ACTIVE ACCOUNTS</div><div class="stat-delta">${users.length?Math.round(active/users.length*100):0}% of total</div></div>
+    <div class="stat-card c-cyan"><div class="stat-n cyan">${thisWeek}</div><div class="stat-k">SIGNUPS THIS WEEK</div><div class="stat-delta">${today} in last 24h</div></div>
+    <div class="stat-card c-amber"><div class="stat-n amber">${countries}</div><div class="stat-k">COUNTRIES REPRESENTED</div><div class="stat-delta">out of 30+ available</div></div>`;
+
+  // Sparkline signups last 7 days
+  renderSparkline('sparkSignups', users, 7);
+
+  // Country bars
+  const cMap = {};
+  users.forEach(u=>{if(u.country)cMap[u.country]=(cMap[u.country]||0)+1;else cMap['Global']=(cMap['Global']||0)+1});
+  const cTop = Object.entries(cMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const cMax = cTop[0]?cTop[0][1]:1;
+  document.getElementById('countryBars').innerHTML = cTop.length
+    ? cTop.map(([k,v],i)=>`<div class="bar-row"><div class="bar-label">${esc(k)}</div><div class="bar-track"><div class="bar-fill" style="width:${v/cMax*100}%;background:${getColor(i)}"></div></div><div class="bar-val">${v}</div></div>`).join('')
+    : '<div style="color:var(--dim);font-size:.78rem;padding:.5rem 0">No users yet</div>';
+
+  // Genre bars
+  const gMap = {};
+  users.forEach(u=>(u.genres||[]).forEach(g=>{gMap[g]=(gMap[g]||0)+1}));
+  const gTop = Object.entries(gMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const gMax = gTop[0]?gTop[0][1]:1;
+  document.getElementById('genreBars').innerHTML = gTop.length
+    ? gTop.map(([k,v],i)=>`<div class="bar-row"><div class="bar-label">${esc(k)}</div><div class="bar-track"><div class="bar-fill" style="width:${v/gMax*100}%;background:${getColor(i)}"></div></div><div class="bar-val">${v}</div></div>`).join('')
+    : '<div style="color:var(--dim);font-size:.78rem;padding:.5rem 0">No data yet</div>';
+
+  // Platform stats
+  const avgGenres = users.length ? Math.round(users.reduce((s,u)=>s+(u.genres||[]).length,0)/users.length*10)/10 : 0;
+  document.getElementById('platformStats').innerHTML = `
+    <div class="bar-row"><div class="bar-label">Avg Genres/User</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(avgGenres/20*100,100)}%"></div></div><div class="bar-val">${avgGenres}</div></div>
+    <div class="bar-row"><div class="bar-label">With Country Set</div><div class="bar-track"><div class="bar-fill" style="width:${users.length?users.filter(u=>u.country).length/users.length*100:0}%;background:var(--cyan)"></div></div><div class="bar-val">${users.filter(u=>u.country).length}</div></div>
+    <div class="bar-row"><div class="bar-label">Verified Emails</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--green)"></div></div><div class="bar-val">${users.length}</div></div>`;
+
+  // Recent signups table
+  const recent = [...users].sort((a,b)=>new Date(b.joinedAt)-new Date(a.joinedAt)).slice(0,5);
+  if(!recent.length){
+    document.getElementById('recentSignups').innerHTML=`<div class="empty-state"><div class="ei">👥</div><p>No users have signed up yet. Share the Pulse app link!</p></div>`;
+    return;
+  }
+  document.getElementById('recentSignups').innerHTML=`<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>USER</th><th>COUNTRY</th><th>GENRES</th><th>JOINED</th></tr></thead><tbody>${
+    recent.map(u=>`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="u-av">${u.name[0].toUpperCase()}</div><div><div class="u-name">${esc(u.name)}</div><div class="u-email">${esc(u.email)}</div></div></div></td>
+      <td class="mono">${u.country||'—'}</td>
+      <td class="mono">${(u.genres||[]).length} genres</td>
+      <td class="mono">${fmtShort(u.joinedAt)}</td>
+    </tr>`).join('')
+  }</tbody></table></div>`;
+
+  updateUserBadge();
+}
+
+function renderSparkline(id, users, days){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const counts = Array(days).fill(0);
+  const now = Date.now();
+  users.forEach(u=>{
+    const diff = Math.floor((now - new Date(u.joinedAt))/86400000);
+    if(diff>=0&&diff<days) counts[days-1-diff]++;
+  });
+  const max = Math.max(...counts,1);
+  el.innerHTML = counts.map((c,i)=>`<div class="spark-bar" style="height:${Math.max(c/max*100,4)}%;background:${c>0?'var(--lime)':'var(--s3)'}" title="Day ${i+1}: ${c} signups"></div>`).join('');
+}
+
+// ══════════════════════════════════════════════════
+// USERS TABLE
+// ══════════════════════════════════════════════════
+let userSortField = 'joinedAt';
+let userSortAsc = false;
+let userPage = 0;
+const PAGE_SIZE = 15;
+let userFilter = '';
+let filteredUsers = [];
+
+function sortUsers(field){
+  if(userSortField===field) userSortAsc=!userSortAsc;
+  else {userSortField=field;userSortAsc=true;}
+  renderUsersTable();
+}
+
+function filterUsers(){
+  userFilter = document.getElementById('userSearch').value.toLowerCase();
+  userPage = 0;
+  renderUsersTable();
+}
+
+function renderUsersTable(){
+  const users = getAccounts();
+  document.getElementById('totalUserCount').textContent = `(${users.length})`;
+
+  // Filter
+  filteredUsers = users.filter(u=>
+    u.name.toLowerCase().includes(userFilter) ||
+    u.email.toLowerCase().includes(userFilter) ||
+    (u.country||'').toLowerCase().includes(userFilter)
+  );
+
+  // Sort
+  filteredUsers.sort((a,b)=>{
+    let av = a[userSortField]||'';
+    let bv = b[userSortField]||'';
+    if(userSortField==='genres'){av=(a.genres||[]).length;bv=(b.genres||[]).length;}
+    const r = av<bv?-1:av>bv?1:0;
+    return userSortAsc?r:-r;
+  });
+
+  const page = filteredUsers.slice(userPage*PAGE_SIZE,(userPage+1)*PAGE_SIZE);
+  const tbody = document.getElementById('userTableBody');
+
+  if(!filteredUsers.length){
+    tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="ei">👥</div><p>${userFilter?'No users match your search.':'No users have signed up yet.'}</p></div></td></tr>`;
+    document.getElementById('userPagination').innerHTML='';
+    return;
+  }
+
+  tbody.innerHTML = page.map(u=>`
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="u-av" style="background:linear-gradient(135deg,var(--violet),var(--cyan));color:#fff">${u.name[0].toUpperCase()}</div>
+          <div><div class="u-name">${esc(u.name)}</div><div class="u-email">${esc(u.email)}</div></div>
+        </div>
+      </td>
+      <td class="mono">${esc(u.country||'—')}</td>
+      <td><span class="mono">${(u.genres||[]).length} genres</span></td>
+      <td class="mono">${fmtShort(u.joinedAt)}</td>
+      <td class="mono">${fmtShort(u.lastSeen)}</td>
+      <td><span class="badge ${u.status||'active'}">${u.status||'ACTIVE'}</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="row-btn" onclick="viewUser('${u.id}')">VIEW</button>
+          <button class="row-btn" onclick="toggleStatus('${u.id}')">${u.status==='inactive'?'RESTORE':'SUSPEND'}</button>
+          <button class="row-btn del" onclick="deleteUser('${u.id}')">DEL</button>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  // Pagination
+  const totalPages = Math.ceil(filteredUsers.length/PAGE_SIZE);
+  const pg = document.getElementById('userPagination');
+  if(totalPages<=1){pg.innerHTML='';return;}
+  pg.innerHTML=`
+    <button class="pg-btn" onclick="goPage(${userPage-1})" ${userPage===0?'disabled':''}>‹</button>
+    <span class="pg-info">PAGE ${userPage+1} / ${totalPages} · ${filteredUsers.length} USERS</span>
+    <button class="pg-btn" onclick="goPage(${userPage+1})" ${userPage>=totalPages-1?'disabled':''}>›</button>`;
+}
+
+function goPage(p){userPage=p;renderUsersTable();}
+
+function viewUser(id){
+  const users = getAccounts();
+  const u = users.find(x=>x.id===id);
+  if(!u) return;
+  document.getElementById('modalUserName').textContent = u.name;
+  document.getElementById('modalUserBody').innerHTML = `
+    <div class="detail-row"><div class="detail-label">EMAIL</div><div class="detail-val">${esc(u.email)}</div></div>
+    <div class="detail-row"><div class="detail-label">PHONE</div><div class="detail-val">${esc(u.phone||'—')}</div></div>
+    <div class="detail-row"><div class="detail-label">COUNTRY</div><div class="detail-val">${esc(u.country||'Not set')}</div></div>
+    <div class="detail-row"><div class="detail-label">STATUS</div><div class="detail-val"><span class="badge ${u.status||'active'}">${u.status||'ACTIVE'}</span></div></div>
+    <div class="detail-row"><div class="detail-label">JOINED</div><div class="detail-val">${fmtDate(u.joinedAt)}</div></div>
+    <div class="detail-row"><div class="detail-label">LAST SEEN</div><div class="detail-val">${fmtDate(u.lastSeen)}</div></div>
+    <div class="detail-row"><div class="detail-label">USER ID</div><div class="detail-val" style="font-family:'JetBrains Mono',monospace;font-size:.7rem">${u.id}</div></div>
+    <div class="detail-row"><div class="detail-label">GENRES (${(u.genres||[]).length})</div><div class="detail-val"><div class="genre-pills">${(u.genres||[]).map(g=>`<span class="genre-pill">${esc(g)}</span>`).join('')||'None selected'}</div></div></div>`;
+  document.getElementById('modalActions').innerHTML = `
+    <button class="tbtn" onclick="toggleStatus('${u.id}');closeUserModal();renderUsersTable()">${u.status==='inactive'?'✅ RESTORE ACCOUNT':'⏸ SUSPEND ACCOUNT'}</button>
+    <button class="tbtn danger" onclick="if(confirm('Delete ${esc(u.name)}?')){deleteUser('${u.id}');closeUserModal()}">🗑 DELETE USER</button>`;
+  document.getElementById('userModal').classList.add('open');
+}
+
+function closeUserModal(){document.getElementById('userModal').classList.remove('open')}
+
+function toggleStatus(id){
+  const users = getAccounts();
+  const u = users.find(x=>x.id===id);
+  if(!u) return;
+  u.status = u.status==='inactive'?'active':'inactive';
+  saveAccounts(users);
+  logActivity('status', `User ${u.name} (${u.email}) ${u.status==='active'?'restored':'suspended'}`);
+  toast(`${u.status==='active'?'✅ Account restored':'⏸ Account suspended'}: ${u.name}`);
+  renderUsersTable();updateUserBadge();
+}
+
+function deleteUser(id){
+  const users = getAccounts();
+  const u = users.find(x=>x.id===id);
+  if(!u||!confirm(`Delete ${u.name} (${u.email}) permanently?`)) return;
+  saveAccounts(users.filter(x=>x.id!==id));
+  logActivity('del', `User deleted: ${u.name} (${u.email})`);
+  toast(`🗑 Deleted: ${u.name}`);
+  renderUsersTable();updateUserBadge();
+  renderDashboard();
+}
+
+function exportCSV(){
+  const users = getAccounts();
+  if(!users.length){toast('No users to export');return}
+  const rows = [['ID','Name','Email','Phone','Country','Genres','Joined','Last Seen','Status']];
+  users.forEach(u=>rows.push([u.id,u.name,u.email,u.phone||'',u.country||'',(u.genres||[]).join(';'),u.joinedAt||'',u.lastSeen||'',u.status||'active']));
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `pulse_users_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('⬇ CSV exported');
+  logActivity('export','User data exported as CSV');
+}
+
+// ══════════════════════════════════════════════════
+// ACTIVITY LOG
+// ══════════════════════════════════════════════════
+function renderActivityLog(){
+  const log = getActivityLog();
+  const el = document.getElementById('activityList');
+  if(!log.length){el.innerHTML='<div class="empty-state"><div class="ei">📋</div><p>No activity yet</p></div>';return;}
+  el.innerHTML = log.slice(0,100).map(e=>`
+    <div class="act-item">
+      <div class="act-dot ${e.type}"></div>
+      <div class="act-content">
+        <div class="act-msg">${esc(e.msg)}</div>
+        <div class="act-time">${fmtDate(e.ts)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function clearActivityLog(){
+  if(!confirm('Clear all activity logs?')) return;
+  saveActivityLog([]);renderActivityLog();toast('🗑 Activity log cleared');
+}
+
+// ══════════════════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════════════════
+function renderAnalytics(){
+  const users = getAccounts();
+  const now = Date.now();
+  const d1 = users.filter(u=>new Date(u.joinedAt)>new Date(now-86400000)).length;
+  const d7 = users.filter(u=>new Date(u.joinedAt)>new Date(now-7*86400000)).length;
+  const d30 = users.filter(u=>new Date(u.joinedAt)>new Date(now-30*86400000)).length;
+  const avgG = users.length ? (users.reduce((s,u)=>s+(u.genres||[]).length,0)/users.length).toFixed(1) : 0;
+
+  document.getElementById('analyticsStats').innerHTML = `
+    <div class="stat-card c-lime"><div class="stat-n lime">${d1}</div><div class="stat-k">SIGNUPS TODAY</div></div>
+    <div class="stat-card c-cyan"><div class="stat-n cyan">${d7}</div><div class="stat-k">LAST 7 DAYS</div></div>
+    <div class="stat-card c-amber"><div class="stat-n amber">${d30}</div><div class="stat-k">LAST 30 DAYS</div></div>
+    <div class="stat-card c-violet"><div class="stat-n violet">${avgG}</div><div class="stat-k">AVG GENRES/USER</div></div>`;
+
+  renderSparkline('sparkSignups2', users, 14);
+
+  document.getElementById('engagementStats').innerHTML = `
+    <div class="bar-row"><div class="bar-label">Total Accounts</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="bar-val">${users.length}</div></div>
+    <div class="bar-row"><div class="bar-label">With Country</div><div class="bar-track"><div class="bar-fill" style="width:${users.length?users.filter(u=>u.country).length/users.length*100:0}%;background:var(--cyan)"></div></div><div class="bar-val">${users.filter(u=>u.country).length}</div></div>
+    <div class="bar-row"><div class="bar-label">Multi-genre</div><div class="bar-track"><div class="bar-fill" style="width:${users.length?users.filter(u=>(u.genres||[]).length>3).length/users.length*100:0}%;background:var(--violet)"></div></div><div class="bar-val">${users.filter(u=>(u.genres||[]).length>3).length}</div></div>
+    <div class="bar-row"><div class="bar-label">Active Status</div><div class="bar-track"><div class="bar-fill" style="width:${users.length?users.filter(u=>u.status!=='inactive').length/users.length*100:0}%;background:var(--green)"></div></div><div class="bar-val">${users.filter(u=>u.status!=='inactive').length}</div></div>`;
+}
+
+// ══════════════════════════════════════════════════
+// GENRE & COUNTRY STATS
+// ══════════════════════════════════════════════════
+function renderGenreStats(){
+  const users = getAccounts();
+  const gMap = {};
+  users.forEach(u=>(u.genres||[]).forEach(g=>{gMap[g]=(gMap[g]||0)+1}));
+  const sorted = Object.entries(gMap).sort((a,b)=>b[1]-a[1]);
+  const max = sorted[0]?sorted[0][1]:1;
+  document.getElementById('allGenreBars').innerHTML = sorted.length
+    ? sorted.map(([k,v],i)=>`<div class="bar-row"><div class="bar-label" style="width:140px">${esc(k)}</div><div class="bar-track"><div class="bar-fill" style="width:${v/max*100}%;background:${getColor(i)}"></div></div><div class="bar-val">${v}</div></div>`).join('')
+    : '<div style="color:var(--dim);font-size:.78rem;padding:.5rem 0">No genre data yet</div>';
+}
+
+function renderCountryStats(){
+  const users = getAccounts();
+  const cMap = {};
+  users.forEach(u=>{const k=u.country||'Not Set';cMap[k]=(cMap[k]||0)+1});
+  const sorted = Object.entries(cMap).sort((a,b)=>b[1]-a[1]);
+  const max = sorted[0]?sorted[0][1]:1;
+  document.getElementById('allCountryBars').innerHTML = sorted.length
+    ? sorted.map(([k,v],i)=>`<div class="bar-row"><div class="bar-label" style="width:140px">${esc(k)}</div><div class="bar-track"><div class="bar-fill" style="width:${v/max*100}%;background:${getColor(i)}"></div></div><div class="bar-val">${v}</div></div>`).join('')
+    : '<div style="color:var(--dim);font-size:.78rem;padding:.5rem 0">No country data yet</div>';
+}
+
+// ══════════════════════════════════════════════════
+// DANGER ZONE
+// ══════════════════════════════════════════════════
+function clearAllUsers(){
+  if(!confirm('⚠️ DELETE ALL USERS?\n\nThis cannot be undone. Type "DELETE" to confirm.')){return}
+  const conf = prompt('Type DELETE to confirm:');
+  if(conf!=='DELETE'){toast('Cancelled');return}
+  saveAccounts([]);logActivity('del','ALL USER ACCOUNTS DELETED by admin');
+  toast('🗑 All users deleted');renderDashboard();updateUserBadge();
+}
+
+function resetPlatform(){
+  if(!confirm('⚠️ FULL PLATFORM RESET?\n\nThis deletes all users AND activity logs.')){return}
+  const conf = prompt('Type RESET to confirm:');
+  if(conf!=='RESET'){toast('Cancelled');return}
+  saveAccounts([]);saveActivityLog([]);
+  toast('🗑 Platform reset complete');renderDashboard();
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  // Check existing session
+  if(adminSession){
+    const creds=getAdminCreds();
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('adminApp').style.display='flex';
+    document.getElementById('adminAv').textContent='A';
+    document.getElementById('adminName').textContent=creds.email.split('@')[0];
+    initDashboard();
+  }
+  // Pre-fill demo creds
+  document.getElementById('ad_email').value='admin@pulse.music';
+});
+
+// Close modal on bg click
+document.getElementById('userModal').addEventListener('click',function(e){
+  if(e.target===this) closeUserModal();
+});
+</script>
+</body>
+</html>
