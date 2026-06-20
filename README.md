@@ -55,12 +55,6 @@ Pulse Music was built as a static client-side web app with modern PWA support. I
 1. Run `launch-pulse.bat`.
 2. It opens `Pulse.html` in Chrome app mode.
 
-### Option 3: Deploy with GitHub Pages
-1. Create a new GitHub repository.
-2. Push the project files to the repository.
-3. GitHub Actions will automatically build and deploy to GitHub Pages (workflow included).
-4. Your app will be live at `https://your-username.github.io/pulse-music`
-
 ## Notes
 
 - The app uses external services such as Deezer and YouTube via client-side fetch requests.
@@ -69,10 +63,10 @@ Pulse Music was built as a static client-side web app with modern PWA support. I
 
 ## Future Improvements
 
-- Add a backend API for authenticated user data and saved preferences
-- Improve offline support for dynamic feed content
-- Add real chart API integration instead of fallback/localized data
-- Add a hosted deployment URL in the README once published
+- Will add a backend API for authenticated user data and saved preferences
+- Will improve offline support for dynamic feed content
+- Will add real chart API integration instead of fallback/localized data
+
 
 ---
 
